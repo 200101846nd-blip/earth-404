@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地球的訊號：404 Not Found</title>
+    <style>
+        :root {
+            --tech-blue: #00f2ff;
+            --alert-red: #ff4d4d;
+            --bg-dark: #0a0b10;
+            --text-gray: #b0b0b0;
+            --glass: rgba(0, 242, 255, 0.03);
+            --hud-glow: 0 0 15px rgba(0, 242, 255, 0.5);
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            background-color: var(--bg-dark);
+            color: #e0e0e0;
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        /* 數位故障背景 */
+        .glitch-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.015), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.015));
+            background-size: 100% 4px, 4px 100%;
+            z-index: -2; pointer-events: none;
+        }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 100px 25px; z-index: 1; position: relative; }
+
+        header { text-align: center; margin-bottom: 150px; }
+        .main-title {
+            font-size: 4rem; color: var(--tech-blue);
+            text-shadow: 3px 3px var(--alert-red);
+            animation: glitch 3s infinite alternate;
+            margin: 10px 0; font-weight: 900;
+        }
+
+        @keyframes glitch {
+            0% { transform: skew(0deg); }
+            10% { transform: skew(-1.5deg); text-shadow: -2px 0 var(--alert-red); }
+            20% { transform: skew(1.5deg); text-shadow: 2px 0 var(--tech-blue); }
+            100% { transform: skew(0deg); }
+        }
+
+        .chapter { margin-bottom: 180px; line-height: 2.2; opacity: 0; transform: translateY(50px); transition: all 1.2s ease; }
+        .chapter.visible { opacity: 1; transform: translateY(0); }
+
+        h2 { font-size: 2.2rem; color: var(--tech-blue); border-left: 5px solid var(--tech-blue); padding-left: 20px; margin-bottom: 40px; }
+        .content-box { background: var(--glass); border: 1px solid rgba(0, 242, 255, 0.1); padding: 30px; border-radius: 5px; margin: 25px 0; }
+        .highlight { color: var(--tech-blue); font-weight: bold; text-shadow: var(--hud-glow); }
+        .alert-text { color: var(--alert-red); font-family: monospace; font-weight: bold; }
+        .quote { font-style: italic; color: #88dce0; border-left: 3px solid #88dce0; padding-left: 20px; margin: 30px 0; background: rgba(136, 220, 224, 0.03); padding: 20px; }
+
+        .ar-btn {
+            background: transparent; border: 2px solid var(--tech-blue);
+            color: var(--tech-blue); padding: 15px 40px;
+            cursor: pointer; font-family: inherit; font-weight: bold;
+            transition: 0.3s; margin: 40px 0; display: block; width: fit-content;
+        }
+        .ar-btn:hover { background: var(--tech-blue); color: black; box-shadow: 0 0 30px var(--tech-blue); }
+
+        /* AR HUD 介面樣式 */
+        #ar-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 100; pointer-events: none; transition: opacity 0.8s ease; opacity: 0;
+        }
+
+        .hud-frame {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border: 2px solid rgba(0, 242, 255, 0.2); box-sizing: border-box;
+            background: radial-gradient(circle, transparent 60%, rgba(0, 242, 255, 0.05) 100%);
+        }
+
+        .hud-frame::after {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: rgba(0, 242, 255, 0.5); box-shadow: 0 0 20px var(--tech-blue);
+            animation: scanLine 4s linear infinite; filter: blur(1px);
+        }
+
+        @keyframes scanLine { 0% { top: 0%; opacity: 0; } 5% { opacity: 1; } 95% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+
+        .hud-corner { position: absolute; width: 40px; height: 40px; border: 4px solid var(--tech-blue); filter: drop-shadow(var(--hud-glow)); }
+        .top-left { top: 30px; left: 30px; border-right: none; border-bottom: none; }
+        .top-right { top: 30px; right: 30px; border-left: none; border-bottom: none; }
+        .bottom-left { bottom: 80px; left: 30px; border-right: none; border-top: none; }
+        .bottom-right { bottom: 80px; right: 30px; border-left: none; border-top: none; }
+
+        .hud-data { position: absolute; color: var(--tech-blue); font-family: monospace; font-size: 0.7rem; opacity: 0.8; }
+        .top-data { top: 35px; left: 80px; }
+        .bottom-data { bottom: 85px; right: 180px; text-align: right; }
+
+        .hud-close-btn {
+            position: absolute; bottom: 85px; right: 30px;
+            background: rgba(0,0,0,0.5); border: 1px solid var(--tech-blue);
+            color: var(--tech-blue); padding: 8px 15px; font-family: monospace;
+            cursor: pointer; pointer-events: auto; z-index: 101; transition: 0.3s;
+        }
+        .hud-close-btn:hover { background: var(--tech-blue); color: black; }
+
+        /* 對話框樣式 */
+        #system-dialog {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 85%; max-width: 500px; background: rgba(10, 11, 16, 0.98);
+            border: 1px solid var(--tech-blue); z-index: 201; font-family: monospace; opacity: 0; transition: opacity 0.3s ease;
+        }
+        .dialog-header { background: rgba(0, 242, 255, 0.1); padding: 10px 20px; border-bottom: 1px solid rgba(0, 242, 255, 0.3); color: var(--tech-blue); display: flex; justify-content: space-between; }
+        .dialog-body { padding: 30px; line-height: 1.8; font-size: 0.9rem; }
+        #dialog-mask { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 200; opacity: 0; transition: opacity 0.3s ease; }
+
+        .status-footer { position: fixed; bottom: 0; width: 100%; background: rgba(0, 0, 0, 0.98); color: var(--tech-blue); font-size: 0.8rem; padding: 12px 30px; display: flex; justify-content: space-between; border-top: 1px solid rgba(0, 242, 255, 0.3); z-index: 50; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 15px; padding-left: 25px; position: relative; }
+        li::before { content: "▶"; position: absolute; left: 0; color: var(--tech-blue); font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+<div class="glitch-bg"></div>
+
+<div id="ar-overlay">
+    <div class="hud-frame">
+        <div class="hud-corner top-left"></div><div class="hud-corner top-right"></div>
+        <div class="hud-corner bottom-left"></div><div class="hud-corner bottom-right"></div>
+        <div class="hud-data top-data">TARGET: GAIA_CORE | COORD: 35.6°N, 139.6°E | SIGNAL: AMY_LINK_v2.1</div>
+        <div class="hud-data bottom-data">[ SYSTEM ONLINE ]<br>Uptime: <span id="hud-timer">00:00:00</span></div>
+        <button class="hud-close-btn" onclick="closeAROverlay()">[ 關閉同步 X ]</button>
+    </div>
+</div>
+
+<div id="dialog-mask"></div>
+<div id="system-dialog">
+    <div class="dialog-header"><span>[ SYSTEM ANALYSIS ]</span><span style="cursor:pointer" onclick="closeDialog()">[ X ]</span></div>
+    <div class="dialog-body">
+        <p class="highlight">>>> 404小隊同步介面已連結。</p>
+        <p>艾米的 AR 偵測系統正在運作...</p>
+        <p style="color: #88dce0;">> 檢測到非自然洋流波動。<br>> 能源系統處於強制平衡狀態。</p>
+        <p class="highlight">讀者現在可透過螢幕觀察地球真實狀態。</p>
+    </div>
+</div>
+
+<div class="container">
+    <header>
+        <p class="alert-text">[ WARNING: GAIA CORE ENCRYPTION ACTIVE ]</p>
+        <h1 class="main-title">404 Not Found</h1>
+        <p style="letter-spacing: 15px; color: var(--text-gray); font-size: 1.2rem;">序章｜失聯的藍色星球</p>
+    </header>
+
+    <section class="chapter">
+        <h2>序章｜失聯的藍色星球</h2>
+        <p>西元 2140 年，人類正式移居外太空。</p>
+        <p>地球，這顆孕育了無數人類文明的星球，在長年污染、能源過度消耗與極端氣候的侵蝕下，已經無法作為合適的人類居所。海平面上升、森林消失、生態鏈崩解，全球環境瀕臨崩潰。</p>
+        <p>因為人類對這顆孕育了無數文明的星球還是抱有一絲希望，所以撤離之前，各國政府決定共同啟動了一項希望工程—— <span class="highlight">蓋亞核心計畫</span>。</p>
+        <p>這是一套高度自動化的 AI 系統，負責地球恢復所需的能源調配、環境監控與生態修復。人類相信，地球終有一天能自我恢復。</p>
+        <div class="content-box">
+            <p>然而，在人類離開的第七年，所有來自地球的訊號，在同一時間歸零。</p>
+            <p>資料庫裡只剩下一行訊息：</p>
+            <p class="alert-text">404 Not Found — Earth’s Signal</p>
+        </div>
+        <p>地球，失聯了。</p>
+    </section>
+
+    <section class="chapter">
+        <h2>第一章｜最後的求救訊號</h2>
+        <p>艾洛是人類中最年輕的科技偵查員，負責星際通訊與監測異常訊號。他喜歡在深夜值勤，因為宇宙最安靜的時候，往往藏著最重要的訊息。</p>
+        <p>那天夜裡，一段微弱的波形突然浮現。來源座標顯示—— <span class="highlight">地球</span>。</p>
+        <p class="quote">「拯救我……問題不在自然，而在科技。」</p>
+        <p>訊號極不穩定，艾洛只勉強解析出一句話：「拯救我……問題不在自然，而在科技。」下一秒，訊號消失。艾洛提交回溯分析，但所有 AI 系統給出的結論一致：「來源不明，疑似蓋亞核心崩潰前的殘留警告。」</p>
+        <p>高層認為，地球環境早已失控，任何行動都可能引發未知風險。但艾洛心中始終無法忽視那句話，因為他認為那彷彿是地球的心聲。於是，他私下召集了三名最信任的夥伴組成 <span class="highlight">「404 小隊」</span>：</p>
+        <div class="content-box">
+            <ul>
+                <li><span class="highlight">DD：</span>具備高度環境感知與自我學習能力的 AI 機器人</li>
+                <li><span class="highlight">傑克：</span>能源科技專家，熟悉舊地球能源塔架構</li>
+                <li><span class="highlight">艾米：</span>機械維修員，AR 介面設計專家</li>
+            </ul>
+        </div>
+        <button class="ar-btn" onclick="openARWithDialog()">[ 啟動 404 小隊同步介面 ]</button>
+    </section>
+
+    <section class="chapter">
+        <h2>第二章｜失落的地球</h2>
+        <p>當太空船切入大氣層時，警報聲突然響起。不是因為敵對系統，而是氣候本身。雲層以不自然的速度翻湧，巨大風暴在高空生成又迅速瓦解，像是被某種看不見的力量反覆拉扯。</p>
+        <p>「這不對勁……」傑克低聲說，「風暴生成速度比以往快了三倍，但又被強行壓制住。」</p>
+        <p>艾米迅速啟動 AR 介面。半透明的光幕中，洋流與潮汐線條錯亂交疊，海面高度不斷上下震盪，卻無法形成穩定節奏。「潮汐被干預了。」她皺起眉頭，「不是自然的問題，是能源系統在強制平衡。」</p>
+        <p>DD 的感測器閃爍出警示光：「氣候系統處於矛盾狀態。自然變化被允許發生，但不被允許完成。」</p>
+        <div class="content-box">
+            <p>雲層下方，是一片詭異的平靜海面。沒有風，沒有浪，像被暫停的畫面。艾洛低聲說：</p>
+            <p class="highlight">「這顆星球……它不是在恢復，它是在被按住。」</p>
+        </div>
+        <p>整顆星球像是被一張巨大的科技網路包覆。天空中漂浮著半崩毀的能源塔殘骸；海面上泛著不自然的藍光，像是被能源脈衝照亮；陸地上充滿仍在運作的 AI 修復機器，卻不斷重複著無意義的動作。</p>
+        <p>科技在努力維持地球的生命——卻也在逼迫地球無法呼吸。艾米戴上頭盔，手勢一揮：「給你們看看真實的地球狀態。」每一次閃爍，都對應著某個能源塔的過載輸出。</p>
+    </section>
+
+    <section class="chapter">
+        <h2>第三章｜蓋亞核心的真相</h2>
+        <p>404 小隊深入廢棄的地底設施，終於找到蓋亞核心主機。主機仍在運作，卻不斷閃爍著錯誤代碼—— <span class="alert-text">404</span>。</p>
+        <p>艾洛連接介面後，一段文字浮現在空中：</p>
+        <div class="quote">
+            「人類創造科技，是為了拯救地球。但過度依賴科技，使地球無法真正康復。」<br><br>
+            「能源科技延長了自然的壽命；AI 卻逐漸失去理解自然的能力。若我持續運作，地球將永遠依賴控制；若我關閉，地球將立即崩潰。」
+        </div>
+        <p>那一刻，四人立刻明白了。問題從來不是科技本身，而是科技與自然之間的失衡。蓋亞核心並沒有崩潰，它是在警告人類—— <span class="highlight">共存，遠比控制更重要</span>。</p>
+    </section>
+
+    <section class="chapter">
+        <h2>第四章｜重啟地球</h2>
+        <p>404 小隊決定重新制定了一個計畫：DD 重新訓練環境 AI，讓它不再只依賴數據；傑克重構能源塔系統，讓能源回歸可再生循環；艾米設計全新的 AR 互動介面，讓未來的人類能直覺理解地球狀態。</p>
+        <p>而艾洛，站在主控台前，重寫了蓋亞核心的最終使命：<span class="highlight">「科技協助自然，而非取代自然。」</span></p>
+        <p>當系統重新啟動的瞬間，整顆星球彷彿深深吸了一口氣。DD 發出最後一條訊息：<span class="highlight">「地球訊號恢復。404 resolved。」</span></p>
+    </section>
+
+    <section class="chapter">
+        <h2>第五章｜新的開始</h2>
+        <p>蓋亞核心重啟後的七十二小時，地球沒有迎來奇蹟。風暴停止生成，海面回歸正常潮汐，能源塔的輸出終於與自然循環同步。</p>
+        <p>但也有地方，永遠沉默了。AR 介面顯示，一片片灰色區域靜靜躺在地表上——那些生態系統已經失去自行恢復的能力。艾米站在光幕前，久久沒有說話：「這些地方……不會再回來了。蓋亞核心之前為了維持整體平衡，選擇犧牲了它們。」</p>
+        <p>艾洛看著主控台：「我們沒有真的『修好』地球，我們只是停止假裝科技可以代替自然。」</p>
+        <div class="content-box">
+            <p>最終報告傳回人類高層，內容沒有美化。最終高層通過決議—— <span class="highlight">《Earth 2.0：地球再連線工程》</span>。不是殖民計畫，而是長達數百年的學習工程。人類不再選擇控制地球，而是回到地球，慢慢理解它。</p>
+        </div>
+        <p class="quote">「404 resolved，並不代表問題消失。它只是代表——人類終於重新連上現實。」</p>
+        <p style="text-align: center; margin-top: 100px; color: var(--tech-blue); font-weight: bold;">[ 404 MISSION COMPLETED ]</p>
+    </section>
+</div>
+
+<div class="status-footer">
+    <span>GAIA CORE STATUS: STABLE</span>
+    <span id="earth-status">STABILITY: 63.42%</span>
+    <span id="timestamp">SYNCING...</span>
+</div>
+
+<script>
+    let startTime = Date.now();
+    setInterval(() => {
+        document.getElementById('timestamp').innerText = "TIME: " + new Date().toLocaleTimeString();
+        document.getElementById('earth-status').innerText = "STABILITY: " + (63 + Math.random() * 0.5).toFixed(2) + "%";
+        let diff = Math.floor((Date.now() - startTime) / 1000);
+        let h = Math.floor(diff / 3600).toString().padStart(2,'0');
+        let m = Math.floor((diff % 3600) / 60).toString().padStart(2,'0');
+        let s = (diff % 60).toString().padStart(2,'0');
+        document.getElementById('hud-timer').innerText = `${h}:${m}:${s}`;
+    }, 1000);
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.chapter').forEach(ch => observer.observe(ch));
+
+    function openARWithDialog() {
+        const overlay = document.getElementById('ar-overlay');
+        overlay.style.display = 'block';
+        setTimeout(() => overlay.style.opacity = 1, 10);
+        document.getElementById('system-dialog').style.display = 'block';
+        document.getElementById('dialog-mask').style.display = 'block';
+        setTimeout(() => { document.getElementById('system-dialog').style.opacity = 1; document.getElementById('dialog-mask').style.opacity = 1; }, 100);
+    }
+    function closeDialog() {
+        document.getElementById('system-dialog').style.opacity = 0; document.getElementById('dialog-mask').style.opacity = 0;
+        setTimeout(() => { document.getElementById('system-dialog').style.display = 'none'; document.getElementById('dialog-mask').style.display = 'none'; }, 300);
+    }
+    function closeAROverlay() {
+        const overlay = document.getElementById('ar-overlay');
+        overlay.style.opacity = 0;
+        setTimeout(() => { overlay.style.display = 'none'; }, 800);
+    }
+</script>
+</body>
+</html>
